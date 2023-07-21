@@ -247,7 +247,6 @@ class HomeassistantPlugin(
         return _topic
 
     def _generate_device_registration(self):
-
         _discovery_topic = self._settings.get(["discovery_topic"])
 
         _node_name = self._settings.get(["node_name"])
@@ -594,21 +593,25 @@ class HomeassistantPlugin(
         )
 
     def _generate_sensor(self, topic, values):
-        payload={}
-        payload.update({
-            "avty": [],
-            "~": self._generate_topic("baseTopic", "", full=True),
-        })
+        payload = {}
+        payload.update(
+            {
+                "avty": [],
+                "~": self._generate_topic("baseTopic", "", full=True),
+            }
+        )
 
         # Add in set values
         payload.update(values)
 
         # Append default availability topic
-        payload["avty"].append({
-            "t": "~" + self._generate_topic("lwTopic", ""),
-            "pl_avail": "connected",
-            "pl_not_avail": "disconnected",
-        })
+        payload["avty"].append(
+            {
+                "t": "~" + self._generate_topic("lwTopic", ""),
+                "pl_avail": "connected",
+                "pl_not_avail": "disconnected",
+            }
+        )
 
         self.mqtt_publish(topic, payload, allow_queueing=True)
 
@@ -637,7 +640,6 @@ class HomeassistantPlugin(
         return None
 
     def _generate_status(self):
-
         data = {"temperature": self._get_cpu_temp()}
 
         if self.mqtt_publish_with_timestamp:
@@ -648,7 +650,6 @@ class HomeassistantPlugin(
             )
 
     def _generate_printer_status(self):
-
         data = self._printer.get_current_data()
         try:
             data["progress"]["printTimeLeftFormatted"] = str(
@@ -677,7 +678,6 @@ class HomeassistantPlugin(
             )
 
     def _generate_connection_status(self):
-
         state, _, _, _ = self._printer.get_current_connection()
         state_connected = "Disconnected" if state == "Closed" else "Connected"
         # Function can be called by on_event before on_after_startup has run.
@@ -732,7 +732,9 @@ class HomeassistantPlugin(
         else:
             self._logger.error("Unknown message received: " + str(message))
 
-    def _on_shutdown_system(self, topic, message, retained=None, qos=None, *args, **kwargs):
+    def _on_shutdown_system(
+        self, topic, message, retained=None, qos=None, *args, **kwargs
+    ):
         self._logger.debug("Shutdown print message received: " + str(message))
         if message == b"PRESS":
             shutdown_command = self._settings.global_get(
@@ -747,7 +749,9 @@ class HomeassistantPlugin(
         else:
             self._logger.error("Unknown message received: " + str(message))
 
-    def _on_restart_system(self, topic, message, retained=None, qos=None, *args, **kwargs):
+    def _on_restart_system(
+        self, topic, message, retained=None, qos=None, *args, **kwargs
+    ):
         self._logger.debug("Reboot print message received: " + str(message))
         if message == b"PRESS":
             _command = self._settings.global_get(
@@ -762,7 +766,9 @@ class HomeassistantPlugin(
         else:
             self._logger.error("Unknown message received: " + str(message))
 
-    def _on_restart_server(self, topic, message, retained=None, qos=None, *args, **kwargs):
+    def _on_restart_server(
+        self, topic, message, retained=None, qos=None, *args, **kwargs
+    ):
         self._logger.debug("Restart print message received: " + str(message))
         if message == b"PRESS":
             _command = self._settings.global_get(
@@ -806,17 +812,19 @@ class HomeassistantPlugin(
         elif self.snapshot_enabled and not message == "PRESS":
             self._logger.error("Unknown message received: " + str(message))
 
-    def _on_connect_printer(self, topic, message, retained=None, qos=None, *args, **kwargs):
+    def _on_connect_printer(
+        self, topic, message, retained=None, qos=None, *args, **kwargs
+    ):
         self._logger.debug("(Dis)Connecting to printer" + str(message))
         try:
-          if message == b'True':
-            self._printer.connect()
-          elif message == b'False':
-            self._printer.disconnect()
-          else:
-            self._logger.error("Unknown message received: " + str(message))
+            if message == b"True":
+                self._printer.connect()
+            elif message == b"False":
+                self._printer.disconnect()
+            else:
+                self._logger.error("Unknown message received: " + str(message))
         except Exception as e:
-          self._logger.error("Unable to run connect command: " + str(e))
+            self._logger.error("Unable to run connect command: " + str(e))
 
     def _on_home(self, topic, message, retained=None, qos=None, *args, **kwargs):
         self._logger.debug("Homing printer: " + str(message))
@@ -850,7 +858,6 @@ class HomeassistantPlugin(
             self._logger.error("Unable to run printer commands: " + str(e))
 
     def _generate_device_controls(self, subscribe=False):
-
         _discovery_topic = self._settings.get(["discovery_topic"])
 
         _node_name = self._settings.get(["node_name"])
@@ -1062,7 +1069,8 @@ class HomeassistantPlugin(
                 self._generate_topic("controlTopic", "jog", full=True), self._on_jog
             )
             self.mqtt_subscribe(
-                self._generate_topic("controlTopic", "connect", full=True), self._on_connect_printer
+                self._generate_topic("controlTopic", "connect", full=True),
+                self._on_connect_printer,
             )
             self.mqtt_subscribe(
                 self._generate_topic("controlTopic", "home", full=True), self._on_home
@@ -1073,7 +1081,6 @@ class HomeassistantPlugin(
             )
 
     def _generate_device_triggers(self):
-
         _discovery_topic = self._settings.get(["discovery_topic"])
 
         _node_name = self._settings.get(["node_name"])
@@ -1088,7 +1095,10 @@ class HomeassistantPlugin(
 
         ##~~ Print Start event trigger
         self._generate_sensor(
-            topic=_discovery_topic + "/device_automation/" + _node_id + "_PRINT_STARTED/config",
+            topic=_discovery_topic
+            + "/device_automation/"
+            + _node_id
+            + "_PRINT_STARTED/config",
             values={
                 "atype": "trigger",
                 "type": "event",
@@ -1101,7 +1111,10 @@ class HomeassistantPlugin(
 
         ##~~ Print Failed event trigger
         self._generate_sensor(
-            topic=_discovery_topic + "/device_automation/" + _node_id + "_PRINT_FAILED/config",
+            topic=_discovery_topic
+            + "/device_automation/"
+            + _node_id
+            + "_PRINT_FAILED/config",
             values={
                 "atype": "trigger",
                 "type": "event",
@@ -1114,7 +1127,10 @@ class HomeassistantPlugin(
 
         ##~~ Print Done event trigger
         self._generate_sensor(
-            topic=_discovery_topic + "/device_automation/" + _node_id + "_PRINT_DONE/config",
+            topic=_discovery_topic
+            + "/device_automation/"
+            + _node_id
+            + "_PRINT_DONE/config",
             values={
                 "atype": "trigger",
                 "type": "event",
@@ -1127,7 +1143,10 @@ class HomeassistantPlugin(
 
         ##~~ Print Cancelled event trigger
         self._generate_sensor(
-            topic=_discovery_topic + "/device_automation/" + _node_id + "_PRINT_CANCELLED/config",
+            topic=_discovery_topic
+            + "/device_automation/"
+            + _node_id
+            + "_PRINT_CANCELLED/config",
             values={
                 "atype": "trigger",
                 "type": "event",
@@ -1140,7 +1159,10 @@ class HomeassistantPlugin(
 
         ##~~ Print Paused event trigger
         self._generate_sensor(
-            topic=_discovery_topic + "/device_automation/" + _node_id + "_PRINT_PAUSED/config",
+            topic=_discovery_topic
+            + "/device_automation/"
+            + _node_id
+            + "_PRINT_PAUSED/config",
             values={
                 "atype": "trigger",
                 "type": "event",
@@ -1153,7 +1175,10 @@ class HomeassistantPlugin(
 
         ##~~ Print Resumed event trigger
         self._generate_sensor(
-            topic=_discovery_topic + "/device_automation/" + _node_id + "_PRINT_RESUMED/config",
+            topic=_discovery_topic
+            + "/device_automation/"
+            + _node_id
+            + "_PRINT_RESUMED/config",
             values={
                 "atype": "trigger",
                 "type": "event",
@@ -1261,10 +1286,9 @@ class HomeassistantPlugin(
                 allow_queueing=True,
             )
 
-
         if (
-            self.psucontrol_enabled and
-            event == Events.PLUGIN_PSUCONTROL_PSU_STATE_CHANGED
+            self.psucontrol_enabled
+            and event == Events.PLUGIN_PSUCONTROL_PSU_STATE_CHANGED
         ):
             self._generate_psu_state(payload["isPSUOn"])
 
