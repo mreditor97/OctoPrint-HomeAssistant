@@ -1093,98 +1093,24 @@ class HomeassistantPlugin(
             _node_id, _node_name, _device_manufacturer, _device_model
         )
 
-        ##~~ Print Start event trigger
+        ##~~ Print event trigger
         self._generate_sensor(
             topic=_discovery_topic
-            + "/device_automation/"
+            + "/event/"
             + _node_id
-            + "_PRINT_STARTED/config",
+            + "_PRINT_EVENT/config",
             values={
-                "atype": "trigger",
-                "type": "event",
-                "stype": "Print Started",
-                "pl": "PrintStarted",
-                "t": "~" + self._generate_topic("hassTopic", "device_trigger"),
-                "device": _config_device,
-            },
-        )
-
-        ##~~ Print Failed event trigger
-        self._generate_sensor(
-            topic=_discovery_topic
-            + "/device_automation/"
-            + _node_id
-            + "_PRINT_FAILED/config",
-            values={
-                "atype": "trigger",
-                "type": "event",
-                "stype": "Print Failed",
-                "pl": "PrintFailed",
-                "t": "~" + self._generate_topic("hassTopic", "device_trigger"),
-                "device": _config_device,
-            },
-        )
-
-        ##~~ Print Done event trigger
-        self._generate_sensor(
-            topic=_discovery_topic
-            + "/device_automation/"
-            + _node_id
-            + "_PRINT_DONE/config",
-            values={
-                "atype": "trigger",
-                "type": "event",
-                "stype": "Print Complete",
-                "pl": "PrintDone",
-                "t": "~" + self._generate_topic("hassTopic", "device_trigger"),
-                "device": _config_device,
-            },
-        )
-
-        ##~~ Print Cancelled event trigger
-        self._generate_sensor(
-            topic=_discovery_topic
-            + "/device_automation/"
-            + _node_id
-            + "_PRINT_CANCELLED/config",
-            values={
-                "atype": "trigger",
-                "type": "event",
-                "stype": "Print Cancelled",
-                "pl": "PrintCancelled",
-                "t": "~" + self._generate_topic("hassTopic", "device_trigger"),
-                "device": _config_device,
-            },
-        )
-
-        ##~~ Print Paused event trigger
-        self._generate_sensor(
-            topic=_discovery_topic
-            + "/device_automation/"
-            + _node_id
-            + "_PRINT_PAUSED/config",
-            values={
-                "atype": "trigger",
-                "type": "event",
-                "stype": "Print Paused",
-                "pl": "PrintPaused",
-                "t": "~" + self._generate_topic("hassTopic", "device_trigger"),
-                "device": _config_device,
-            },
-        )
-
-        ##~~ Print Resumed event trigger
-        self._generate_sensor(
-            topic=_discovery_topic
-            + "/device_automation/"
-            + _node_id
-            + "_PRINT_RESUMED/config",
-            values={
-                "atype": "trigger",
-                "type": "event",
-                "stype": "Print Resumed",
-                "pl": "PrintResumed",
-                "t": "~" + self._generate_topic("hassTopic", "device_trigger"),
+                "name": "Print event",
+                "uniq_id": _node_id + "_PRINT_EVENT",
+                "state_topic": "~" + self._generate_topic("hassTopic", "device_event"),
+                "event_types": [
+                    "PrintStarted",
+                    "PrintFailed",
+                    "PrintDone",
+                    "PrintCancelled",
+                    "PrintPaused",
+                    "PrintResumed",
+                ],
                 "device": _config_device,
             },
         )
@@ -1239,8 +1165,8 @@ class HomeassistantPlugin(
             Events.PRINT_RESUMED,
         ):
             self.mqtt_publish(
-                self._generate_topic("hassTopic", "device_trigger", full=True),
-                event,
+                self._generate_topic("hassTopic", "device_event", full=True),
+                { "event_type": event },
                 allow_queueing=True,
             )
 
