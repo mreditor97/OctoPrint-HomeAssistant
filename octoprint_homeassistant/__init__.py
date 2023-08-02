@@ -77,6 +77,7 @@ class HomeassistantPlugin(
 
         self._generate_device_registration()
         self._generate_device_controls(subscribe=True)
+        self._generate_device_triggers()
         self._generate_connection_status()
 
     ##~~ TemplatePlugin mixin
@@ -1095,10 +1096,7 @@ class HomeassistantPlugin(
 
         ##~~ Print event trigger
         self._generate_sensor(
-            topic=_discovery_topic
-            + "/event/"
-            + _node_id
-            + "_PRINT_EVENT/config",
+            topic=_discovery_topic + "/event/" + _node_id + "_PRINT_EVENT/config",
             values={
                 "name": "Print event",
                 "uniq_id": _node_id + "_PRINT_EVENT",
@@ -1166,7 +1164,7 @@ class HomeassistantPlugin(
         ):
             self.mqtt_publish(
                 self._generate_topic("hassTopic", "device_event", full=True),
-                { "event_type": event },
+                {"event_type": event},
                 allow_queueing=True,
             )
 
